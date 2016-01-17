@@ -38,7 +38,7 @@ public class CoolWeatherDB {
 	}
 
 	public synchronized static CoolWeatherDB getInstance(Context context){
-		if (coolWeatherDB!=null) {
+		if (coolWeatherDB==null) {
 			coolWeatherDB=new CoolWeatherDB(context);
 		}
 		return coolWeatherDB;
@@ -81,7 +81,7 @@ public class CoolWeatherDB {
 	/**
 	 * 将City实例存储到数据库
 	 */
-	public void savaCity(City city){
+	public void saveCity(City city){
 		if (city!=null) {
 			ContentValues contentValues=new ContentValues();
 			contentValues.put("city_name", city.getCityName());
@@ -93,7 +93,7 @@ public class CoolWeatherDB {
 
 	public List<City> loadCities(int provinceId){
 		List<City> list=new ArrayList<City>();
-		Cursor cursor=db.query("City", null, "province_id=?", new String[]{String.valueOf(provinceId)},
+		Cursor cursor=db.query("City", null, "province_id = ?", new String[]{String.valueOf(provinceId)},
 				null, null, null);
 		if (cursor.moveToFirst()) {
 			do {
