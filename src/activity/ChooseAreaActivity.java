@@ -15,7 +15,10 @@ import model.Country;
 import model.Province;
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -60,6 +63,13 @@ public class ChooseAreaActivity extends Activity{
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		if (preferences.getBoolean("city_selected", false)) {
+			Intent intent=new Intent(this,weatherActivity.class);
+			startActivity(intent);
+			finish();
+			return ;
+		}
 		setContentView(R.layout.choose_area);
 		listView=(ListView) findViewById(R.id.list_view);
 		titleView=(TextView) findViewById(R.id.title_text);
@@ -77,6 +87,12 @@ public class ChooseAreaActivity extends Activity{
 				}else if(currentLevel==LEVEL_CITY){
 					selectedCity=cityList.get(position);
 					queryCounties();
+				}else if(currentLevel==LEVEL_COUNTRY){
+					String countyCode=countryList.get(position).getCountryCode();
+					Intent  intent=new Intent(ChooseAreaActivity.this,weatherActivity.class);
+					intent.putExtra("country_code", countyCode);
+					startActivity(intent);
+					finish();
 				}
 			}
 		});
@@ -112,6 +128,7 @@ public class ChooseAreaActivity extends Activity{
 		}else {
 			address="http://www.weather.com.cn/data/list3/city.xml";
 		}
+		Log.i("信息", "通知消息");
 		showProgressDialog();
 		HttpUtil.sendHttpRequest(address, new HttpCallbackListener() {
 
@@ -122,13 +139,13 @@ public class ChooseAreaActivity extends Activity{
 					result=Utility.handleProvincesRespone(coolWeatherDB, response);
 				}else if ("city".equals(type)) {
 					result=Utility.handleCitiesRespone(coolWeatherDB, response, selectedProvince.getId());
+					Log.i("ID", selectedProvince.getId()+"");
 				}else if ("country".equals(type)) {
 					result=Utility.handleCountiesRespone(coolWeatherDB, response, selectedCity.getId());
 				}
 				if (result) {
 					//通过runOnUiThread()方法回到主线程处理逻辑
 					runOnUiThread(new Runnable() {
-
 						@Override
 						public void run() {
 							closeProgressDialog();
@@ -203,11 +220,11 @@ public class ChooseAreaActivity extends Activity{
 				datalist.add(country.getCountryName());
 			}
 			adapter.notifyDataSetChanged();
-			listView.setSelection(0);
-			titleView.setText(selectedProvince.getProvinceName());
+			listView.setSelection(0); 
+			titleView.setText(selectedCity.getCityName());
 			currentLevel=LEVEL_COUNTRY;
 		}else {
-			queryFromServer(selectedCity.getCityCode(),"city");
+			queryFromServer(selectedCity.getCityCode(),"country");
 		}
 	}
 
